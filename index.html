@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuenta de la Promoción</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="shortcut icon" href="icon.png" type="image/x-icon">
+<style>
+  :root{
+    --paper:#FAF6EA;
+    --paper-line:#E4DCC6;
+    --ink:#20283C;
+    --ink-soft:#5B6273;
+    --gold:#B8892B;
+    --gold-soft:#EFDFB4;
+    --red:#B4443A;
+    --green:#4C7A5E;
+    --card:#FFFFFF;
+    --shadow: 0 1px 0 rgba(32,40,60,.06), 0 8px 24px rgba(32,40,60,.06);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(180deg, transparent, transparent 34px, var(--paper-line) 35px),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  .margin-rule{
+    position:fixed; top:0; bottom:0; left:38px; width:2px; background:rgba(180,68,58,.28); z-index:0;
+  }
+  header{
+    position:relative; z-index:1;
+    padding:34px 24px 18px 56px;
+    max-width:720px; margin:0 auto;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--gold); font-weight:600; margin-bottom:6px;
+  }
+  h1{
+    font-family:'Fraunces', serif; font-weight:600; font-size:32px; margin:0;
+    letter-spacing:-.01em;
+  }
+  .sub{color:var(--ink-soft); font-size:14px; margin-top:6px;}
+
+  .tabs{
+    max-width:720px; margin:22px auto 0; padding:0 24px 0 56px;
+    display:flex; gap:10px; position:relative; z-index:1;
+  }
+  .tab{
+    flex:1; text-align:center; padding:14px 10px;
+    background:var(--card); border:1px solid var(--paper-line);
+    border-radius:10px 10px 0 0; cursor:pointer;
+    font-family:'Fraunces', serif; font-weight:600; font-size:16px;
+    color:var(--ink-soft); box-shadow:var(--shadow); position:relative;
+    transition:all .15s ease;
+  }
+  .tab .icon{display:block; font-size:20px; margin-bottom:4px;}
+  .tab.active{ color:var(--ink); border-bottom-color:var(--card); }
+  .tab.active::after{
+    content:""; position:absolute; left:0; right:0; bottom:-1px; height:3px;
+    background:var(--gold);
+  }
+
+  main{
+    max-width:720px; margin:0 auto; padding:0 24px 0 56px; position:relative; z-index:1;
+  }
+  .panel{
+    background:var(--card); border:1px solid var(--paper-line); border-top:none;
+    border-radius:0 0 12px 12px; padding:22px 20px 26px; box-shadow:var(--shadow);
+  }
+  .hidden{display:none;}
+
+  .field{margin-bottom:16px;}
+  label{display:block; font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); margin-bottom:6px; font-weight:600;}
+  select, input[type=text]{
+    width:100%; padding:11px 12px; border-radius:8px; border:1px solid var(--paper-line);
+    font-family:'Work Sans', sans-serif; font-size:15px; background:#FFFDF8; color:var(--ink);
+  }
+  select:focus, input:focus{outline:2px solid var(--gold-soft); border-color:var(--gold);}
+
+  .status-msg{font-size:13px; color:var(--ink-soft); margin:4px 0 14px; font-family:'IBM Plex Mono', monospace;}
+  .status-msg.err{color:var(--red);}
+  .status-msg.ok{color:var(--green);}
+
+  /* CUADROS */
+  .ledger-card{
+    border:1px solid var(--paper-line); border-radius:10px; padding:16px; margin-bottom:14px;
+    background: linear-gradient(180deg, #FFFDF8, #FFFDF8);
+  }
+  .ledger-card .name{font-family:'Fraunces', serif; font-size:19px; font-weight:600;}
+  .ledger-card .child{color:var(--ink-soft); font-size:13px; margin-top:2px;}
+  .row-nums{display:flex; gap:14px; margin-top:14px; flex-wrap:wrap;}
+  .num-box{flex:1; min-width:110px;}
+  .num-box .k{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);}
+  .num-box .v{font-family:'IBM Plex Mono', monospace; font-size:19px; font-weight:600; margin-top:2px;}
+  .v.owe{color:var(--red);}
+  .v.paid{color:var(--green);}
+  .stamp{
+    display:inline-flex; align-items:center; gap:6px;
+    border:2px solid var(--green); color:var(--green); font-family:'IBM Plex Mono', monospace;
+    font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:600;
+    padding:4px 10px; border-radius:20px; transform:rotate(-3deg); margin-top:12px;
+  }
+
+  /* search table for cuadros */
+  table{width:100%; border-collapse:collapse; margin-top:6px;}
+  th{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--ink-soft); text-align:left; padding:8px 8px;
+    border-bottom:2px solid var(--paper-line);
+  }
+  td{padding:9px 8px; font-size:13.5px; border-bottom:1px solid var(--paper-line);}
+  tr.me{background:var(--gold-soft);}
+  tr.paid td{background:rgba(76,122,94,.12);}
+  tr.paid.me td{background:linear-gradient(90deg, rgba(76,122,94,.18), var(--gold-soft));}
+  tr.paid td:first-child{position:relative; padding-left:22px;}
+  tr.paid td:first-child::before{content:"✓"; position:absolute; left:6px; color:var(--green); font-weight:700;}
+  td.num{font-family:'IBM Plex Mono', monospace; text-align:right;}
+  td.num.paid-amt{color:var(--green); font-weight:600;}
+
+  /* INVITADOS */
+  .counter-row{
+    display:flex; align-items:center; justify-content:center; gap:18px; margin:18px 0 6px;
+  }
+  .stepper-btn{
+    width:46px; height:46px; border-radius:50%; border:1.5px solid var(--ink);
+    background:var(--card); font-size:22px; font-family:'IBM Plex Mono', monospace;
+    cursor:pointer; color:var(--ink); line-height:1;
+  }
+  .stepper-btn:active{background:var(--gold-soft);}
+  .counter-num{
+    font-family:'Fraunces', serif; font-size:48px; font-weight:700; min-width:70px; text-align:center;
+  }
+  .save-hint{text-align:center; font-size:12px; color:var(--ink-soft); margin-bottom:18px;}
+
+  .pay-box{
+    background:var(--ink); color:var(--paper); border-radius:10px; padding:18px; margin:18px 0;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .pay-box .lbl{font-size:12px; text-transform:uppercase; letter-spacing:.08em; opacity:.75;}
+  .pay-box .amt{font-family:'IBM Plex Mono', monospace; font-size:26px; font-weight:600; color:var(--gold-soft);}
+  .breakdown{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink-soft); text-align:center; margin-top:-8px; margin-bottom:18px;}
+
+  .goal-wrap{margin-top:22px; border-top:1px dashed var(--paper-line); padding-top:18px;}
+  .goal-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
+  .goal-top .t{font-family:'Fraunces', serif; font-weight:600; font-size:15px;}
+  .goal-top .n{font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--ink-soft);}
+  .goal-bar{height:14px; border-radius:7px; background:var(--paper-line); overflow:hidden; position:relative;}
+  .goal-fill{height:100%; background:linear-gradient(90deg, var(--gold), var(--green)); border-radius:7px; transition:width .4s ease;}
+  .goal-note{font-size:12px; color:var(--ink-soft); margin-top:8px;}
+
+  .config-note{
+    max-width:720px; margin:24px auto 0; padding:0 24px 0 56px; font-size:12px; color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace; line-height:1.6;
+  }
+  button.primary{
+    background:var(--ink); color:var(--paper); border:none; padding:11px 16px; border-radius:8px;
+    font-family:'Work Sans', sans-serif; font-weight:600; font-size:14px; cursor:pointer; width:100%;
+  }
+</style>
+</head>
+<body>
+<div class="margin-rule"></div>
+
+<header>
+  <div class="eyebrow">Promoción 2026</div>
+  <h1>Cuenta de la Promoción</h1>
+  <div class="sub">Revisa el cuadro de graduación y los invitados de la fiesta.</div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="cuadros"><span class="icon">🖼️</span>Cuadros</div>
+  <div class="tab" data-tab="invitados"><span class="icon">🎉</span>Invitados</div>
+</div>
+
+<main>
+
+  <!-- ===== PANEL CUADROS ===== -->
+  <section id="panel-cuadros" class="panel">
+    <div class="field">
+      <label for="cuadro-select">Busca tu nombre (papá / mamá)</label>
+      <select id="cuadro-select"></select>
+    </div>
+    <div id="cuadro-status" class="status-msg">Cargando datos…</div>
+
+    <div id="cuadro-detail"></div>
+
+    <div style="margin-top:22px;">
+      <label>Tabla completa</label>
+      <table>
+        <thead><tr><th>Alumno</th><th>Padre/Madre</th><th style="text-align:right">Adelanto</th><th style="text-align:right">Falta</th></tr></thead>
+        <tbody id="cuadro-table-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== PANEL INVITADOS ===== -->
+  <section id="panel-invitados" class="panel hidden">
+    <div class="field">
+      <label for="invitado-select">Busca tu nombre</label>
+      <select id="invitado-select"></select>
+    </div>
+    <div id="invitado-status" class="status-msg">Cargando datos…</div>
+
+    <div id="invitado-editor" class="hidden">
+      <label style="text-align:center; display:block;">Cantidad de invitados</label>
+      <div class="counter-row">
+        <button class="stepper-btn" id="btn-minus">−</button>
+        <div class="counter-num" id="invitado-count">0</div>
+        <button class="stepper-btn" id="btn-plus">+</button>
+      </div>
+      <div class="save-hint" id="save-hint">Se guarda automáticamente en la hoja de cálculo</div>
+
+      <div class="pay-box">
+        <div>
+          <div class="lbl">A pagar</div>
+        </div>
+        <div class="amt" id="pay-amount">S/. 0</div>
+      </div>
+      <div class="breakdown" id="pay-breakdown"></div>
+    </div>
+
+    <div class="goal-wrap">
+      <div class="goal-top">
+        <div class="t">Meta de invitados</div>
+        <div class="n" id="goal-numbers">0 / 80</div>
+      </div>
+      <div class="goal-bar"><div class="goal-fill" id="goal-fill" style="width:0%"></div></div>
+      <div class="goal-note">Se necesitan 80 invitados en total para cancelar la fiesta.</div>
+    </div>
+  </section>
+
+</main>
+
+<div class="config-note" id="config-note"></div>
+
+<script>
+/* ============================================================
+   CONFIGURACIÓN — pega aquí la URL de tu Apps Script Web App
+   (ver instrucciones que te di aparte). Si la dejas vacía,
+   la página funciona con datos de muestra, sin guardar cambios.
+   ============================================================ */
+const CONFIG = {
+  API_URL: "https://script.google.com/macros/s/AKfycbwj5Ea4i0b1qMeV8Nt6nkx3Lq5vnwarZ1mRgyh45l23HCQxaRDEHmYWxvGrgEffMfqd/exec" // <-- pega aquí tu URL terminada en /exec
+};
+
+/* Reglas del negocio (ajustables) */
+const CUADRO_PRECIO = 79;      // costo del cuadro
+const INVITADO_PRECIO = 90;    // costo por invitado
+const INVITADO_ADELANTO = 50;  // adelanto ya dado por cada papá para invitados
+const META_INVITADOS = 80;
+
+/* --------- Datos de muestra (se usan si API_URL está vacío) --------- */
+const DEMO_CUADROS = [
+  {alumno:"XAVI", padres:"JAVIER", adelanto:50},
+  {alumno:"BRUCE", padres:"Yuly", adelanto:50},
+  {alumno:"RICARDO", padres:"CRISTINA", adelanto:50},
+  {alumno:"ANGHELY", padres:"HELEN", adelanto:50},
+  {alumno:"LIAM RAMOS", padres:"ANDREA", adelanto:50},
+  {alumno:"YURI", padres:"MARLENE", adelanto:79},
+  {alumno:"ANDREA", padres:"MILAGROS", adelanto:50},
+  {alumno:"CRISTEL", padres:"KRISTEL", adelanto:50},
+  {alumno:"LIAM VALERIANO", padres:"WILLIAM", adelanto:50},
+  {alumno:"IMANOL", padres:"EMMA", adelanto:45},
+  {alumno:"CATALINA", padres:"ELIZA", adelanto:50},
+  {alumno:"MATHIAS", padres:"ANA", adelanto:50},
+  {alumno:"ZAMIRA", padres:"PATRICIA", adelanto:50},
+  {alumno:"ROMINA", padres:"KELLY", adelanto:50},
+  {alumno:"GERARD", padres:"LORENA", adelanto:50},
+  {alumno:"SARAH", padres:"YOBANA", adelanto:50},
+  {alumno:"VALENTINO", padres:"VALESKA", adelanto:70},
+  {alumno:"JHILMER", padres:"NATALY", adelanto:50},
+  {alumno:"MAXIMILIANO", padres:"CARMEN", adelanto:50},
+  {alumno:"SAMANTA", padres:"NANCY", adelanto:50},
+  {alumno:"LIA", padres:"MARIELA", adelanto:50},
+  {alumno:"SANTIAGO", padres:"MAGDA", adelanto:79},
+];
+
+let DEMO_INVITADOS = [
+  {nombre:"LIAM RAMOS", cantidad:3},
+  {nombre:"YURI", cantidad:4},
+  {nombre:"RICARDO", cantidad:3},
+  {nombre:"ROMINA", cantidad:4},
+  {nombre:"ANGHELY", cantidad:3},
+  {nombre:"JHILMER", cantidad:3},
+  {nombre:"ANDREA", cantidad:3},
+  {nombre:"MAXIMILIANO", cantidad:6},
+  {nombre:"IMANOL", cantidad:6},
+  {nombre:"VALENTINO", cantidad:2},
+  {nombre:"SANTIAGO", cantidad:2},
+  {nombre:"LIAM VALERIANO", cantidad:6},
+  {nombre:"LIA", cantidad:8},
+  {nombre:"ZAMIRA", cantidad:3},
+  {nombre:"SAMANTA", cantidad:2},
+  {nombre:"XAVI", cantidad:3},
+  {nombre:"CATALINA", cantidad:3},
+  {nombre:"KRISTEL", cantidad:4},
+  {nombre:"ILAY", cantidad:3},
+  {nombre:"TUTOR", cantidad:2},
+];
+
+/* --------- helpers --------- */
+const usingDemo = !CONFIG.API_URL;
+
+async function apiGet(action){
+  if(usingDemo){
+    if(action==="cuadros") return {ok:true, data:DEMO_CUADROS};
+    if(action==="invitados") return {ok:true, data:DEMO_INVITADOS};
+  }
+  const res = await fetch(`${CONFIG.API_URL}?action=${action}`);
+  return res.json();
+}
+async function apiUpdateInvitado(nombre, cantidad){
+  if(usingDemo){
+    const row = DEMO_INVITADOS.find(r=>r.nombre===nombre);
+    if(row) row.cantidad = cantidad;
+    return {ok:true};
+  }
+  const res = await fetch(CONFIG.API_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"text/plain;charset=utf-8" }, // evita preflight CORS
+    body: JSON.stringify({action:"updateInvitados", nombre, cantidad})
+  });
+  return res.json();
+}
+
+document.getElementById("config-note").textContent = usingDemo
+  ? "⚠ Modo demostración: mostrando datos de ejemplo. Los cambios en Invitados NO se guardan hasta que conectes tu Google Sheet (ver instrucciones)."
+  : "Conectado a tu Google Sheet.";
+
+/* --------- Tabs --------- */
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-cuadros").classList.toggle("hidden", tab.dataset.tab!=="cuadros");
+    document.getElementById("panel-invitados").classList.toggle("hidden", tab.dataset.tab!=="invitados");
+  });
+});
+
+/* ================= CUADROS ================= */
+let cuadrosData = [];
+
+function renderCuadroDetail(row){
+  const falta = Math.max(CUADRO_PRECIO - row.adelanto, 0);
+  const pagado = falta === 0;
+  document.getElementById("cuadro-detail").innerHTML = `
+    <div class="ledger-card">
+      <div class="name">${row.padres}</div>
+      <div class="child">Alumno: ${row.alumno}</div>
+      <div class="row-nums">
+        <div class="num-box"><div class="k">Cuadro cuesta</div><div class="v">S/. ${CUADRO_PRECIO}</div></div>
+        <div class="num-box"><div class="k">Adelanto dado</div><div class="v">S/. ${row.adelanto}</div></div>
+        <div class="num-box"><div class="k">Falta pagar</div><div class="v ${pagado?'paid':'owe'}">S/. ${falta}</div></div>
+      </div>
+      ${pagado ? '<div class="stamp">✓ Cancelado</div>' : ''}
+    </div>`;
+}
+
+function renderCuadroTable(selectedName){
+  const body = document.getElementById("cuadro-table-body");
+  body.innerHTML = cuadrosData.map(r=>{
+    const falta = Math.max(CUADRO_PRECIO - r.adelanto, 0);
+    const isMe = r.padres === selectedName;
+    const isPaid = falta === 0;
+    const rowClasses = [isMe?'me':'', isPaid?'paid':''].filter(Boolean).join(" ");
+    return `<tr class="${rowClasses}">
+      <td>${r.alumno}</td>
+      <td>${r.padres}</td>
+      <td class="num">S/. ${r.adelanto}</td>
+      <td class="num ${isPaid?'paid-amt':''}">${isPaid ? 'Pagado' : 'S/. ' + falta}</td>
+    </tr>`;
+  }).join("");
+}
+
+async function loadCuadros(){
+  const statusEl = document.getElementById("cuadro-status");
+  try{
+    const res = await apiGet("cuadros");
+    if(!res.ok) throw new Error(res.error || "Error");
+    cuadrosData = res.data;
+    statusEl.textContent = "";
+    const select = document.getElementById("cuadro-select");
+    select.innerHTML = `<option value="">— Selecciona —</option>` +
+      cuadrosData.map(r=>`<option value="${r.padres}">${r.padres} (${r.alumno})</option>`).join("");
+    select.addEventListener("change", ()=>{
+      const row = cuadrosData.find(r=>r.padres===select.value);
+      if(row) renderCuadroDetail(row);
+      else document.getElementById("cuadro-detail").innerHTML = "";
+      renderCuadroTable(select.value);
+    });
+    renderCuadroTable("");
+  }catch(e){
+    statusEl.textContent = "No se pudo cargar la información. Revisa la conexión.";
+    statusEl.classList.add("err");
+  }
+}
+
+/* ================= INVITADOS ================= */
+let invitadosData = [];
+let currentInvitado = null;
+
+function updatePayUI(){
+  if(!currentInvitado) return;
+  const total = Math.max(currentInvitado.cantidad * INVITADO_PRECIO - INVITADO_ADELANTO, 0);
+  document.getElementById("invitado-count").textContent = currentInvitado.cantidad;
+  document.getElementById("pay-amount").textContent = `S/. ${total}`;
+  document.getElementById("pay-breakdown").textContent =
+    `${currentInvitado.cantidad} invitados × S/.${INVITADO_PRECIO} − S/.${INVITADO_ADELANTO} de adelanto`;
+}
+
+function updateGoalUI(){
+  const total = invitadosData.reduce((s,r)=>s+Number(r.cantidad||0),0);
+  const pct = Math.min(100, Math.round((total/META_INVITADOS)*100));
+  document.getElementById("goal-numbers").textContent = `${total} / ${META_INVITADOS}`;
+  document.getElementById("goal-fill").style.width = pct + "%";
+}
+
+async function loadInvitados(){
+  const statusEl = document.getElementById("invitado-status");
+  try{
+    const res = await apiGet("invitados");
+    if(!res.ok) throw new Error(res.error || "Error");
+    invitadosData = res.data;
+    statusEl.textContent = "";
+    const select = document.getElementById("invitado-select");
+    select.innerHTML = `<option value="">— Selecciona —</option>` +
+      invitadosData.map(r=>`<option value="${r.nombre}">${r.nombre}</option>`).join("");
+    select.addEventListener("change", ()=>{
+      currentInvitado = invitadosData.find(r=>r.nombre===select.value) || null;
+      document.getElementById("invitado-editor").classList.toggle("hidden", !currentInvitado);
+      if(currentInvitado) updatePayUI();
+    });
+    updateGoalUI();
+  }catch(e){
+    statusEl.textContent = "No se pudo cargar la información. Revisa la conexión.";
+    statusEl.classList.add("err");
+  }
+}
+
+async function changeCantidad(delta){
+  if(!currentInvitado) return;
+  currentInvitado.cantidad = Math.max(0, Number(currentInvitado.cantidad) + delta);
+  updatePayUI();
+  updateGoalUI();
+  const hint = document.getElementById("save-hint");
+  hint.textContent = "Guardando…";
+  try{
+    const res = await apiUpdateInvitado(currentInvitado.nombre, currentInvitado.cantidad);
+    hint.textContent = res.ok ? "Guardado ✓" : "No se pudo guardar";
+  }catch(e){
+    hint.textContent = "No se pudo guardar (sin conexión)";
+  }
+}
+
+document.getElementById("btn-plus").addEventListener("click", ()=>changeCantidad(1));
+document.getElementById("btn-minus").addEventListener("click", ()=>changeCantidad(-1));
+
+/* --------- init --------- */
+loadCuadros();
+loadInvitados();
+</script>
+</body>
+</html>
